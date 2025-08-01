@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 // Update the import path if logger.js is located elsewhere, for example:
 import Logger from '../utils/logger';
 // Or ensure that '../utils/logger.js' exists and is implemented correctly.
@@ -141,3 +141,7 @@ test('demo - appointment booking', async ({ page }) => {
   Logger.info('Saved appointment');
   await logout(page);
 });
+
+function login(page: Page) {
+  throw new Error('Function not implemented.');
+}
