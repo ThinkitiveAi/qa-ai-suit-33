@@ -1,278 +1,288 @@
-# Healthcare API Automation Framework
+# ECareHealth API Testing Framework
 
-A comprehensive Playwright-based API automation framework for testing healthcare platform APIs, now with full TypeScript implementation based on actual Postman collection structure.
+A comprehensive Playwright-based API testing framework for ECareHealth Clinician Management CRUD operations.
 
-## 🆕 New Features
+## 🔐 Dynamic Authentication
 
-- **✅ Postman Collection Based**: Built from actual API collection with real request/response structures
-- **✅ Complete TypeScript Implementation**: Full type safety with interfaces matching actual API payloads
-- **✅ Comprehensive Workflow Class**: `HealthcareApiWorkflow` class for easy integration
-- **✅ Multiple Test Suites**: Both original and Postman-based implementations
-- **✅ Enhanced Error Handling**: Robust error scenarios and validation
-- **✅ Flexible Configuration**: Support for different tenants and environments
+The framework now supports **dynamic token generation** for each test run:
 
-## Project Structure
+### Authentication Flow:
+1. **Fresh Token Each Run**: Framework attempts to get a new bearer token for every test execution
+2. **Fallback Mechanism**: If login endpoint is not available, falls back to static token
+3. **Token Validation**: Automatically checks token expiration and refreshes if needed
+4. **Environment Support**: Different credentials for different environments
+
+### Login Process:
+```javascript
+// Framework automatically:
+1. Reads credentials from environment configuration
+2. Calls login API endpoint to get fresh token
+3. Sets the new token for all subsequent API calls
+4. Validates token expiration before each test
+```
+
+## 🚀 Features
+
+- **Dynamic Authentication**: Gets fresh bearer token for each test run
+- **Environment Management**: Support for staging, production, and development environments
+- **Dynamic Test Data Generation**: Automatically generates unique test data for each run using Faker.js
+- **Robust Error Handling**: Comprehensive error handling and validation
+- **Detailed Logging**: Step-by-step execution logging with request/response details
+- **Multiple Test Scenarios**: Individual endpoint tests and complete flow tests
+- **Authentication Management**: Automated bearer token handling
+- **Data Integrity Verification**: Post-test data validation
+
+## 📁 Project Structure
 
 ```
-healthcare-api-automation/
-├── src/
-│   ├── types/
-│   │   └── api.types.ts              # Original API type definitions
-│   ├── utils/
-│   │   └── api-client.ts             # Original API client wrapper
-│   └── healthcare-api-workflow.ts    # 🆕 NEW: Complete Postman-based implementation
+ecare-api-testing-framework/
+├── package.json                     # Project dependencies and scripts
+├── playwright.config.js             # Playwright configuration
+├── README.md                        # This file
+├── utils/
+│   ├── apiClient.js                # API client with HTTP methods
+│   ├── authHelper.js               # Authentication utilities
+│   └── testDataGenerator.js        # Dynamic test data generation
 ├── tests/
-│   ├── healthcare-workflow.spec.ts          # Original test suite
-│   ├── healthcare-postman-workflow.spec.ts  # 🆕 NEW: Postman-based test suite
-│   └── setup.ts                             # Test setup
-├── playwright.config.ts             # Playwright configuration
-├── package.json                     # Dependencies and scripts
-├── tsconfig.json                    # TypeScript configuration
-├── setup.bat                       # Windows setup script
-├── QUICK_START.md                  # Quick setup guide
-└── README.md                       # This file
+│   └── clinician-management.spec.js # Main test specifications
+└── test-results/                   # Test reports and artifacts
+    ├── html-report/
+    ├── results.json
+    └── junit.xml
 ```
 
-## 🚀 Quick Start
+## 🛠️ Setup Instructions
 
-### 1. Setup Environment
-```bash
-cd D:\Claude\healthcare-api-automation
-npm install
-npm run install:playwright
-```
+### 1. Prerequisites
 
-**OR** run the setup script:
-```bash
-setup.bat
-```
+- Node.js (v16 or higher)
+- npm or yarn package manager
 
-### 2. Run Tests
+### 2. Installation
 
-#### NEW Postman-Based Tests (Recommended):
-```bash
-# Run complete postman-based workflow
-npm run test:postman
+1. **Clone or create the project directory:**
+   ```bash
+   mkdir ecare-api-testing-framework
+   cd ecare-api-testing-framework
+   ```
 
-# Run with browser visible
-npm run test:postman:headed
+2. **Initialize the project:**
+   ```bash
+   npm init -y
+   ```
 
-# Debug mode
-npm run test:postman:debug
-```
+3. **Install dependencies:**
+   ```bash
+   npm install @playwright/test @types/node faker@6.6.6 moment --save-dev
+   ```
 
-#### Original Tests:
-```bash
-# Run original workflow
-npm run test:original
+4. **Install Playwright browsers:**
+   ```bash
+   npx playwright install
+   ```
 
-# Run all tests
-npm test
-```
+5. **Copy all the framework files** to their respective directories as shown in the project structure above.
 
-## 🎯 What the Tests Do
+### 3. Configuration
 
-### Complete Healthcare Workflow:
-1. **🔐 Provider Login** → Authenticate with credentials and capture Bearer token
-2. **👤 Create Patient** → Samuel Peterson (Male, DOB: 1994-08-16) with full medical data
-3. **👨‍⚕️ Create Provider** → Steven Miller (PROVIDER role) with complete profile
-4. **📅 Set Availability** → Monday 12:00-13:00 virtual slots with 30-min duration
-5. **📋 Book Appointment** → Aug 4th, 2025, 17:00-17:30 UTC virtual appointment
-6. **🔍 Verify** → GET calls to confirm all data created properly
+1. **Environment Setup:**
+   ```bash
+   # Create .env file with your credentials
+   cp .env.example .env
+   # Edit .env file with actual passwords
+   ```
 
-## 🛠️ Usage Examples
+2. **Update .env file:**
+   ```bash
+   TEST_ENV=staging
+   TEST_PASSWORD=your_actual_password_here
+   ```
 
-### Using the HealthcareApiWorkflow Class:
+3. **Login Endpoint Configuration:**
+   Update `config/environment.js` with your actual login endpoint if different from `/api/auth/login`
 
-```typescript
-import { HealthcareApiWorkflow } from './src/healthcare-api-workflow';
+## 🎯 Usage
 
-// In your test
-test('Healthcare API Workflow', async ({ request }) => {
-  const workflow = new HealthcareApiWorkflow(request, 'stage_aithinkitive');
-  
-  // Execute complete workflow
-  const results = await workflow.executeCompleteWorkflow();
-  
-  // Verify results
-  expect(results.loginResponse.data.accessToken).toBeTruthy();
-  expect(results.patientResponse.data.id).toBeTruthy();
-  expect(results.providerResponse.data.id).toBeTruthy();
-});
-```
+### Running Tests
 
-### Individual Steps:
+1. **Run all tests:**
+   ```bash
+   npm test
+   ```
 
-```typescript
-// Step-by-step execution
-const workflow = new HealthcareApiWorkflow(request);
+2. **Run tests with UI mode:**
+   ```bash
+   npm run test:ui
+   ```
 
-// 1. Login
-const loginResponse = await workflow.providerLogin(
-  'rose.gomez@jourrapide.com',
-  'Pass@123'
-);
+3. **Run tests in debug mode:**
+   ```bash
+   npm run test:debug
+   ```
 
-// 2. Create Patient
-const patientResponse = await workflow.createPatient();
-const patientId = patientResponse.data.id;
+4. **Run tests in headed mode:**
+   ```bash
+   npm run test:headed
+   ```
 
-// 3. Add Provider
-const providerResponse = await workflow.addProvider();
-const providerId = providerResponse.data.id;
+5. **View test reports:**
+   ```bash
+   npm run test:report
+   ```
 
-// 4. Set Availability
-await workflow.setAvailability(providerId);
+### Test Scenarios
 
-// 5. Book Appointment
-await workflow.bookAppointment(patientId, providerId);
+The framework includes several test scenarios:
 
-// 6. Verification
-const providers = await workflow.getProviders();
-const patients = await workflow.getPatients();
-const availability = await workflow.getAvailabilitySettings(providerId);
-```
+1. **Complete Clinician Management Flow**
+   - Authentication
+   - Create Provider
+   - Get Provider Status
+   - Set Provider Availability
+   - Create Patient
+   - Get Patient Details
+   - Book Appointment
+   - Data Integrity Verification
 
-## 📝 Available Scripts
+2. **Individual API Endpoint Tests**
+   - Provider Creation
+   - Patient Creation
+   - Availability Setting
+   - Appointment Booking
 
-| Command | Description |
-|---------|-------------|
-| `npm run test:postman` | Run Postman-based workflow tests |
-| `npm run test:postman:headed` | Run Postman tests with browser visible |
-| `npm run test:postman:debug` | Debug Postman tests step-by-step |
-| `npm run test:original` | Run original workflow tests |
-| `npm test` | Run all tests |
-| `npm run test:headed` | Run all tests with browser visible |
-| `npm run test:debug` | Debug all tests |
-| `npm run build` | Compile TypeScript |
-| `npm run clean` | Clean build artifacts and reports |
+3. **Error Handling Tests**
+   - Invalid ID handling
+   - Error response validation
 
-## 🔧 Configuration
+## 🔧 Key Features
 
-### API Endpoints
-- **Base URL**: `https://stage-api.ecarehealth.com/api/master`
-- **Default Tenant**: `stage_aithinkitive`
+### Dynamic Test Data Generation
 
-### Required Headers (Auto-managed)
-- `Content-Type: application/json`
-- `X-TENANT-ID: <tenant-id>`
-- `Authorization: Bearer <token>` (for authenticated requests)
-- Plus all browser headers matching real requests
+The framework automatically generates unique test data for each run:
+- **Providers**: Random names, emails with timestamps
+- **Patients**: Random demographics, birth dates
+- **Appointments**: Future dates, unique complaints
+- **Availability**: Configurable time slots
 
-### Test Data
-All test data matches the Postman collection structure:
-- **Login**: `rose.gomez@jourrapide.com` / `Pass@123`
-- **Patient**: Samuel Peterson (Male, 1994-08-16)
-- **Provider**: Steven Miller (saurabh.kale+steven@medarch.com)
-- **Appointment**: Virtual, Aug 4th 2025, 17:00-17:30 UTC
+### Authentication Management
 
-## 🎛️ Advanced Features
+- Static bearer token for consistent testing
+- Automatic token validation
+- Header management for all requests
 
-### Multi-Tenant Support
-```typescript
-const workflow = new HealthcareApiWorkflow(request, 'stage_ketamin');
-// or
-workflow.setTenantId('stage_aithinkitive');
-```
+### Comprehensive Logging
 
-### Pagination Support
-```typescript
-// Get providers with pagination
-const providers = await workflow.getProviders(0, 10); // page 0, size 10
-
-// Search patients
-const patients = await workflow.getPatients(0, 20, 'Samuel'); // search for 'Samuel'
-```
+Every request includes:
+- Request method and endpoint
+- Request payload
+- Response status and body
+- Step-by-step execution progress
 
 ### Error Handling
-```typescript
-try {
-  await workflow.providerLogin('invalid@email.com', 'wrong');
-} catch (error) {
-  console.log('Login failed as expected');
-}
-```
 
-## 🧪 Test Categories
-
-### 1. Complete Workflow Test
-- End-to-end healthcare workflow
-- All steps in sequence with verification
-
-### 2. Individual Step Tests
-- Each API endpoint tested separately
-- Isolated functionality validation
-
-### 3. Error Handling Tests
-- Invalid credentials
-- Unauthorized requests
-- Network failures
-
-### 4. Data Validation Tests
+- Status code validation
 - Response structure validation
-- Required field verification
-- Type checking
+- Detailed error messages
+- Graceful failure handling
 
-### 5. Configuration Tests
-- Multi-tenant support
-- Pagination functionality
-- Header management
+## 📊 Test Reports
 
-## 📊 Reporting
+The framework generates multiple report formats:
+- **HTML Report**: Interactive web-based report
+- **JSON Report**: Machine-readable results
+- **JUnit XML**: CI/CD integration compatible
+- **List Report**: Console output
 
-Test results are available in multiple formats:
-- **HTML Report**: `playwright-report/index.html`
-- **JSON Results**: `test-results/results.json`
-- **Console Logs**: Real-time execution with emojis and detailed responses
+## 🔄 Continuous Integration
 
-## 🔍 Key Differences from Original
+The framework is CI/CD ready with:
+- Configurable retry logic
+- Parallel execution control
+- Multiple output formats
+- Screenshot and trace capture on failures
 
-### ✅ Postman-Based Implementation Benefits:
-1. **Real API Structure**: Matches actual API requests/responses exactly
-2. **Complete Data Models**: Full TypeScript interfaces for all payloads  
-3. **Authentic Headers**: All browser headers from real requests
-4. **Robust Error Handling**: Based on actual API behavior
-5. **Comprehensive Validation**: Tests data structure accuracy
+## 📝 Test Data Management
 
-### 🆚 Comparison:
+### Provider Data
+- Unique email addresses with timestamps
+- Random names and demographics
+- Complete license and DEA information structure
 
-| Feature | Original | Postman-Based |
-|---------|----------|---------------|
-| **API Accuracy** | Simplified | ✅ **100% Accurate** |
-| **Type Safety** | Basic interfaces | ✅ **Complete models** |
-| **Headers** | Minimal | ✅ **Full browser headers** |
-| **Error Handling** | Basic | ✅ **Comprehensive** |
-| **Test Coverage** | Workflow only | ✅ **Multi-scenario** |
+### Patient Data
+- Random demographics
+- Configurable birth dates
+- Insurance information templates
+- Consent management
 
-## 💡 Troubleshooting
+### Appointment Data
+- Future appointment scheduling
+- Timezone handling
+- Duration and type configuration
+- Recurring appointment support
 
-### Common Issues:
-1. **Authentication Failures**: Verify credentials and tenant ID
-2. **Network Issues**: Check API endpoint availability  
-3. **Token Expiry**: Framework automatically handles token capture
-4. **Data Validation**: Review actual API response vs expected structure
+## 🚨 Important Notes
 
-### Debug Mode:
+1. **Bearer Token**: The framework uses a static bearer token. Ensure it's valid for your testing period.
+
+2. **Test Data**: Each test run generates completely new data, preventing conflicts from previous runs.
+
+3. **Sequential Execution**: Tests run sequentially to maintain data dependencies and avoid race conditions.
+
+4. **Environment**: Currently configured for staging environment. Update URLs for different environments.
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **Token Expiration**: Update the bearer token in `utils/authHelper.js`
+
+2. **Network Issues**: Check VPN/firewall settings for API access
+
+3. **Data Conflicts**: The framework generates unique data, but if issues persist, check for API-side constraints
+
+4. **Timeout Issues**: Increase timeout values in `playwright.config.js`
+
+### Debug Mode
+
+For detailed debugging:
 ```bash
-npm run test:postman:debug
+npm run test:debug
 ```
 
-### Verbose Logging:
-All responses are logged with detailed JSON output for debugging.
+This opens the Playwright Inspector for step-by-step execution.
+
+## 📈 Extending the Framework
+
+### Adding New Test Cases
+
+1. Create new test files in the `tests/` directory
+2. Import required utilities from `utils/`
+3. Follow the existing pattern for API calls and validations
+
+### Adding New Endpoints
+
+1. Add new methods to `ApiClient` class
+2. Create corresponding test data generators
+3. Add validation logic for responses
+
+### Custom Data Generation
+
+Modify `TestDataGenerator` class to add new data patterns or customize existing ones.
 
 ## 🤝 Contributing
 
-1. Follow TypeScript best practices
-2. Add proper error handling for new endpoints
-3. Include comprehensive logging
-4. Update type definitions for new API structures
-5. Create tests for new functionality
-6. Document changes in README
+1. Follow the existing code structure
+2. Add appropriate error handling
+3. Include detailed logging
+4. Write comprehensive tests
+5. Update documentation
 
-## 📚 API Documentation
+## 📄 License
 
-The framework is built from actual Postman collection, ensuring 100% API compatibility. All request/response structures match the real healthcare platform APIs.
+MIT License - feel free to use and modify as needed.
 
 ---
 
-**🚀 Ready to automate your healthcare API testing with production-ready accuracy!**
+**Happy Testing! 🎉**
+
+For questions or issues, please refer to the troubleshooting section or check the detailed logs in the test reports.
